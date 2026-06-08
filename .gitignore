@@ -41,6 +41,7 @@ pgdata/
 .DS_Store
 Thumbs.db
 *.sublime-*
+pyrefly.toml
 
 # Logs
 *.log
