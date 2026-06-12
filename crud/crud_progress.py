@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone
 from models.progress import CardProgress
 from schemas.progress_schema import ProgressBase
 
@@ -9,7 +9,8 @@ def get_progress(db: Session, user_id: int, card_id: int):
 def get_due_cards_for_user(db: Session, user_id: int):
     return db.query(CardProgress).filter(
         CardProgress.user_id == user_id,
-        CardProgress.next_review_date <= datetime.utcnow()
+        CardProgress.next_review_date <= datetime.now(timezone.utc),
+        CardProgress.status != "mastered"
     ).all()
 
 def get_all_progress_for_user(db: Session, user_id: int):

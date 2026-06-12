@@ -1,7 +1,8 @@
+from datetime import timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 
 from database import get_db
 from schemas import progress_schema
@@ -56,7 +57,7 @@ def submit_review(card_id: int, review: progress_schema.ReviewRequest, db: Sessi
         "ease_factor": new_ease,
         "status": status,
         "next_review_date": next_date,
-        "last_reviewed_at": datetime.utcnow()
+        "last_reviewed_at": datetime.now(timezone.utc)
     }
     
     return crud_progress.create_or_update_progress(db, current_user.id, card_id, new_data)
