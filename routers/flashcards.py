@@ -11,16 +11,32 @@ from services.pexels_client import get_image_for_word
 
 router = APIRouter()
 
-@router.get("/public", response_model=List[flashcard_schema.FlashcardResponse])
+import math
+
+@router.get("/public", response_model=flashcard_schema.FlashcardPaginatedResponse)
 def read_public_cards(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Misafir kullanıcılar da erişebilir."""
-    cards = crud_flashcard.get_public_flashcards(db, skip=skip, limit=limit)
-    return cards
+    cards, total = crud_flashcard.get_public_flashcards(db, skip=skip, limit=limit)
+    total_pages = math.ceil(total / limit) if limit > 0 else 1
+    return {
+        "items": cards,
+        "total": total,
+        "page": (skip // limit) + 1 if limit > 0 else 1,
+        "size": limit,
+        "total_pages": total_pages
+    }
 
-@router.get("/", response_model=List[flashcard_schema.FlashcardResponse])
+@router.get("/", response_model=flashcard_schema.FlashcardPaginatedResponse)
 def read_user_cards(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    cards = crud_flashcard.get_user_flashcards(db, user_id=current_user.id, skip=skip, limit=limit)
-    return cards
+    cards, total = crud_flashcard.get_user_flashcards(db, user_id=current_user.id, skip=skip, limit=limit)
+    total_pages = math.ceil(total / limit) if limit > 0 else 1
+    return {
+        "items": cards,
+        "total": total,
+        "page": (skip // limit) + 1 if limit > 0 else 1,
+        "size": limit,
+        "total_pages": total_pages
+    }
 
 @router.post("/", response_model=flashcard_schema.FlashcardResponse)
 async def create_card(card: flashcard_schema.FlashcardCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

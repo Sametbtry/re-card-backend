@@ -10,6 +10,7 @@ from crud import crud_progress, crud_flashcard
 from .auth import get_current_user
 from models.user import User
 from services.srs_algorithm import calculate_sm2
+from schemas import flashcard_schema
 
 router = APIRouter()
 
@@ -22,6 +23,11 @@ def get_due_reviews(db: Session = Depends(get_db), current_user: User = Depends(
 def get_library(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Kullanıcının öğrenmiş olduğu veya öğrenmekte olduğu tüm kartların durumunu getirir."""
     return crud_progress.get_all_progress_for_user(db, user_id=current_user.id)
+
+@router.get("/due_cards", response_model=List[flashcard_schema.FlashcardResponse])
+def get_due_cards_with_details(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Bugün çalışılması gereken kartları detaylarıyla birlikte (Flashcard) getirir."""
+    return crud_progress.get_due_flashcards_for_user(db, user_id=current_user.id)
 
 @router.post("/{card_id}", response_model=progress_schema.ProgressResponse)
 def submit_review(card_id: int, review: progress_schema.ReviewRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
