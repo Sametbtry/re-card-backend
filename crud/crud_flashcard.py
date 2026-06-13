@@ -6,10 +6,16 @@ def get_flashcard(db: Session, card_id: int):
     return db.query(Flashcard).filter(Flashcard.id == card_id).first()
 
 def get_public_flashcards(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(Flashcard).filter(Flashcard.is_public == True).offset(skip).limit(limit).all()
+    query = db.query(Flashcard).filter(Flashcard.is_public == True).order_by(Flashcard.id.desc())
+    total = query.count()
+    cards = query.offset(skip).limit(limit).all()
+    return cards, total
 
 def get_user_flashcards(db: Session, user_id: int, skip: int = 0, limit: int = 100):
-    return db.query(Flashcard).filter(Flashcard.creator_id == user_id).offset(skip).limit(limit).all()
+    query = db.query(Flashcard).filter(Flashcard.creator_id == user_id).order_by(Flashcard.id.desc())
+    total = query.count()
+    cards = query.offset(skip).limit(limit).all()
+    return cards, total
 
 def create_flashcard(db: Session, flashcard: FlashcardCreate, user_id: int, image_url: str | None = None):
     db_flashcard = Flashcard(
