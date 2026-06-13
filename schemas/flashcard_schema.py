@@ -28,3 +28,10 @@ class FlashcardResponse(FlashcardBase):
 
     class Config:
         from_attributes = True
+
+class FlashcardPaginatedResponse(BaseModel):
+    items: list[FlashcardResponse]
+    total: int
+    page: int
+    size: int
+    total_pages: int
