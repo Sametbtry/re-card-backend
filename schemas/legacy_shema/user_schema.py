@@ -46,3 +46,13 @@ class PasswordChangeRequest(BaseModel):
 class EmailChangeRequest(BaseModel):
     new_email: str
 
+class MessageResponse(BaseModel):
+    message: str
+
+class UserProfileResponse(UserBase):
+    id: int
+    created_at: datetime
+    total_cards_count: int
+    studied_cards_count: int
+    learned_cards_count: int
+    
