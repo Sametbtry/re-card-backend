@@ -59,7 +59,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             detail="create_user error on crud"
             )
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=Token, summary="login with username and password")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = crud_user.get_user_by_username(db, form_data.username)
     if not user or not crud_user.verify_password(form_data.password, user.password_hash):
