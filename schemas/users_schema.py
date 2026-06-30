@@ -1,11 +1,10 @@
-from pydantic import BaseModel
-from datetime import datetime
+from pydantic import BaseModel, ConfigDict
 
-# /users/me endpoint response
-class UserProfileResponse(BaseModel):
-    id: int
+# /users/me/stats endpoint response
+class UserProfileStats(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     username: str
-    created_at: datetime
     total_cards_count: int
     studied_cards_count: int
     learned_cards_count: int
