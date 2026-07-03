@@ -1,7 +1,7 @@
 from sqlalchemy.sql.functions import current_user
 from fastapi import APIRouter, Depends
 
-from schemas.users_schema import UserProfileStats
+from schemas import UserProfileStats
 from .auth import get_current_user
 
 router = APIRouter()

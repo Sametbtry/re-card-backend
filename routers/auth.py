@@ -6,7 +6,7 @@ from jose import jwt, JWTError
 from database import get_db
 from config import settings
 from sqlalchemy.orm import Session
-from schemas.auth_schema import UserCreate, UserResponse, Token
+from schemas import UserCreate, UserResponse, Token
 from crud import crud_user
 
 router = APIRouter()

@@ -1,6 +1,5 @@
 import re
 from pydantic import BaseModel, field_validator, ConfigDict
-from typing import Optional
 from datetime import datetime
 
 def space_control(v: str) -> str:

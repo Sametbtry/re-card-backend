@@ -1,7 +1,8 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
+# /api/v2/cards/ (Create a new flashcard)
 class CardBase(BaseModel):
     word: str
     example_sentence: Optional[str] = None
@@ -9,9 +10,6 @@ class CardBase(BaseModel):
     translation: str
     is_public: Optional[bool] = False
     image_url: Optional[str] = None
-
-class CardCreate(CardBase):
-    pass
 
 class CardUpdate(BaseModel):
     word: Optional[str] = None
@@ -22,20 +20,19 @@ class CardUpdate(BaseModel):
     image_url: Optional[str] = None
 
 class CardResponse(CardBase):
+    model_config = ConfigDict(from_attributes=True) 
+
     id: int
     creator_id: int
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class CardPaginatedResponse(BaseModel):
     items: list[CardResponse]
     total: int
     page: int
     size: int
-    total_pages: int
+    total_pages: int    
 
 class ImageSearchResponse(BaseModel):
-    image_url: str | None = None
+    image_url: Optional[str] = None
     
