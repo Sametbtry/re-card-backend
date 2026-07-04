@@ -48,7 +48,7 @@ def calculate_sm2(grade: int, iterations: int , interval: int, ease_factor: floa
     if ease_factor < 1.3:
         ease_factor = 1.3
 
-    status = "mastered" if interval >= 30 else "learning"
+    status = "mastered" if interval > 40 else "learning"
 
     today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
     next_review_date_val = today + timedelta(days=interval)
