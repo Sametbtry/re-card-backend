@@ -24,7 +24,7 @@ def read_public_cards(skip: int = 0, limit: int = 100, db: Session = Depends(get
         total_pages = total_pages
     )
 
-@router.get("/", response_model=CardPaginatedResponse, summary="get user's flashcards")
+@router.get("", response_model=CardPaginatedResponse, summary="get user's flashcards")
 def read_user_cards(skip: int = 0, limit: int = 100, current_user = Depends(get_current_user), db : Session = Depends(get_db)):
     cards, total = crud_flashcard.get_user_flashcards(db, user_id=current_user.id, skip=skip, limit=limit)
     total_pages = math.ceil(total / limit) if limit > 0 else 1
@@ -36,17 +36,9 @@ def read_user_cards(skip: int = 0, limit: int = 100, current_user = Depends(get_
         total_pages = total_pages
     )
         
-@router.post("/", response_model=CardResponse, status_code= status.HTTP_201_CREATED, summary="Create a new flashcard")
-async def create_card(card: CardBase, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    # If the user hasn't submitted an image URL, fetch it automatically
-    image_url = card.image_url
-    if not image_url:
-        image_url = await get_image_for_word(card.word)
-    
-    # crud function in the thread pool to avoid blocking the event loop.
-    db_card = await run_in_threadpool(
-        crud_flashcard.create_flashcard, db=db, flashcard=card, user_id=current_user.id, image_url=image_url
-    )
+@router.post("", response_model=CardResponse, status_code= status.HTTP_201_CREATED, summary="Create a new flashcard")
+def create_card(card: CardBase, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    db_card = crud_flashcard.create_flashcard(db=db, flashcard=card, user_id=current_user.id)
     return db_card
 
 @router.get("/images/search", response_model=ImageSearchResponse, summary="get card images url from pexels")

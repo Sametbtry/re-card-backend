@@ -17,11 +17,10 @@ def get_user_flashcards(db: Session, user_id: int, skip: int = 0, limit: int = 1
     cards = query.offset(skip).limit(limit).all()
     return cards, total
 
-def create_flashcard(db: Session, flashcard: CardBase, user_id: int, image_url: str | None = None):
+def create_flashcard(db: Session, flashcard: CardBase, user_id: int):
     db_flashcard = Flashcard(
-        **flashcard.model_dump(exclude={'image_url'}),
-        creator_id=user_id,
-        image_url=image_url
+        **flashcard.model_dump(),
+        creator_id=user_id
     )
     db.add(db_flashcard)
     db.commit()

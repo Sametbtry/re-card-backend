@@ -24,7 +24,7 @@ def get_library(db: Session = Depends(get_db), current_user = Depends(get_curren
 def get_due_cards_with_details(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return crud_progress.get_due_flashcards_for_user(db, user_id=current_user.id)
 
-@router.put("/", response_model=ProgressResponse, summary="Submits a review for a card and updates the progress")
+@router.put("", response_model=ProgressResponse, summary="Submits a review for a card and updates the progress")
 def submit_review(review: ReviewRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     card_id = review.card_id
     # Card availability check
