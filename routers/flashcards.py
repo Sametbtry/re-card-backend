@@ -14,7 +14,6 @@ import math
 
 @router.get("/public", response_model=CardPaginatedResponse, summary= "get public flashcards")
 def read_public_cards(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Misafir kullanıcılar da erişebilir."""
     cards, total = crud_flashcard.get_public_flashcards(db, skip=skip, limit=limit)
     total_pages = math.ceil(total / limit) if limit > 0 else 1
     return CardPaginatedResponse(

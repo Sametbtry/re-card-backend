@@ -1,40 +1,36 @@
 from datetime import timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime, timezone
 
 from database import get_db
-from schemas import progress_schema
+from schemas import ProgressResponse, ReviewRequest, CardResponse, ProgressBase
 from crud import crud_progress, crud_flashcard
 from .auth import get_current_user
-from models.user import User
 from services.srs_algorithm import calculate_sm2
-from schemas import flashcard_schema
 
 router = APIRouter()
 
-@router.get("/", response_model=List[progress_schema.ProgressResponse])
-def get_due_reviews(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """Çalışılması gereken (next_review_date <= NOW) kartları getirir."""
+@router.get("/due-progress", response_model=List[ProgressResponse], summary="Retrieves progress data for the cards you need to work on today")
+def get_due_reviews(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return crud_progress.get_due_cards_for_user(db, user_id=current_user.id)
 
-@router.get("/library", response_model=List[progress_schema.ProgressResponse])
-def get_library(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """Kullanıcının öğrenmiş olduğu veya öğrenmekte olduğu tüm kartların durumunu getirir."""
+@router.get("/library", response_model=List[ProgressResponse] ,summary="Retrieves progress data for all of the user's cards")
+def get_library(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return crud_progress.get_all_progress_for_user(db, user_id=current_user.id)
 
-@router.get("/due_cards", response_model=List[flashcard_schema.FlashcardResponse])
-def get_due_cards_with_details(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    """Bugün çalışılması gereken kartları detaylarıyla birlikte (Flashcard) getirir."""
+@router.get("/due", response_model=List[CardResponse], summary="Retrieves cards you need to work on today")
+def get_due_cards_with_details(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return crud_progress.get_due_flashcards_for_user(db, user_id=current_user.id)
 
-@router.post("/{card_id}", response_model=progress_schema.ProgressResponse)
-def submit_review(card_id: int, review: progress_schema.ReviewRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    # Kart var mı kontrolü
+@router.put("/", response_model=ProgressResponse, summary="Submits a review for a card and updates the progress")
+def submit_review(review: ReviewRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    card_id = review.card_id
+    # Card availability check
     card = crud_flashcard.get_flashcard(db, card_id)
     if not card:
-        raise HTTPException(status_code=404, detail="Flashcard not found")
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail="Flashcard not found")
 
     progress = crud_progress.get_progress(db, current_user.id, card_id)
     
@@ -49,28 +45,28 @@ def submit_review(card_id: int, review: progress_schema.ReviewRequest, db: Sessi
         ease_factor = 2.5
         next_review_date = None
         
-    new_iter, new_interval, new_ease, status, next_date = calculate_sm2(
+    new_iter, new_interval, new_ease, card_status, next_date = calculate_sm2(
         grade=review.grade,
         iterations=iterations,
         interval=interval,
         ease_factor=ease_factor,
         next_review_date=next_review_date
     )
-    
-    new_data = {
-        "iterations": new_iter,
-        "interval": new_interval,
-        "ease_factor": new_ease,
-        "status": status,
-        "next_review_date": next_date,
-        "last_reviewed_at": datetime.now(timezone.utc)
-    }
+
+    new_data = ProgressBase(
+        iterations=new_iter,
+        interval=new_interval,
+        ease_factor=new_ease,
+        status=card_status,
+        next_review_date=next_date,
+        last_reviewed_at=datetime.now(timezone.utc)
+    )
     
     return crud_progress.create_or_update_progress(db, current_user.id, card_id, new_data)
 
-@router.get("/progress/{card_id}", response_model=progress_schema.ProgressResponse)
-def get_card_progress(card_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.get("/progress/{card_id}", response_model=ProgressResponse, summary="Retrieves progress data for a specific card")
+def get_card_progress(card_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     progress = crud_progress.get_progress(db, current_user.id, card_id)
     if not progress:
-        raise HTTPException(status_code=404, detail="Henüz bu kartı çalışmadınız.")
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="You haven't studied this card yet.")
     return progress
