@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from models.progress import CardProgress
-from schemas.progress_schema import ProgressBase
-from models.flashcard import Flashcard
+from models import CardProgress, Flashcard
+from schemas import ProgressBase
 
 def get_progress(db: Session, user_id: int, card_id: int):
     return db.query(CardProgress).filter(CardProgress.user_id == user_id, CardProgress.card_id == card_id).first()
@@ -31,19 +30,20 @@ def get_due_flashcards_for_user(db: Session, user_id: int):
         is_overdue = p is not None and p.next_review_date is not None and p.next_review_date.date() < now.date()
         return is_overdue
         
-    query.sort(key=sort_key)
+    query.sort(key=sort_key, reverse=True)
     return [f for f, p in query]
 
 def get_all_progress_for_user(db: Session, user_id: int):
     return db.query(CardProgress).filter(CardProgress.user_id == user_id).all()
 
-def create_or_update_progress(db: Session, user_id: int, card_id: int, new_data: dict):
+def create_or_update_progress(db: Session, user_id: int, card_id: int, new_data: ProgressBase):
     progress = get_progress(db, user_id, card_id)
+    new_data_dict = new_data.model_dump()
     if not progress:
-        progress = CardProgress(user_id=user_id, card_id=card_id, **new_data)
+        progress = CardProgress(user_id=user_id, card_id=card_id, **new_data_dict)
         db.add(progress)
     else:
-        for key, value in new_data.items():
+        for key, value in new_data_dict.items():
             setattr(progress, key, value)
     db.commit()
     db.refresh(progress)
