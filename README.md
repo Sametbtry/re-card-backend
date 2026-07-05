@@ -17,7 +17,6 @@ Bu proje, bir Flashcard Progressive Web App (PWA) uygulamasının backend sistem
 - **SQLAlchemy**
 - **PostgreSQL**
 - **Pydantic**
-- **Uvicorn**
 - **Docker & Docker Compose**
 
 ## 🏛️ Mimari ve Proje Yapısı
@@ -52,16 +51,28 @@ Projeyle ilişkili veritabanı tabloları, `database.py` üzerinde oluşturulan 
 ### Güvenlik ve Yetkilendirme
 API güvenliği, OAuth2 standartlarına uygun olarak tasarlanmış JWT (JSON Web Token) tabanlı bir sistemle sağlanmaktadır. Kullanıcı şifreleri veritabanına kaydedilirken `bcrypt` algoritması ile tek yönlü olarak hashlenmektedir.
 
-## 📚 Temel API Endpointleri 
+## 📚 Temel API Endpointleri (v2)
 
-- **Auth** (`/api/auth`)
-  - Kullanıcı kayıt, giriş (login) ve token alma işlemleri.
-- **Cards** (`/api/cards`)
-  - Flashcard oluşturma, tüm kartları listeleme, detay görüntüleme, güncelleme ve silme.
-- **Review** (`/api/cards/review`)
-  - Kartların öğrenilme durumu, tekrarlama aralıkları ve gözden geçirme (review) işlemleri için uç noktalar.
+REST standartlarına uygun olarak güncellenmiş yeni endpointler:
 
-*(API dökümantasyonunun tam hali `/docs` veya `/redoc` adreslerinden incelenebilir.)*
+- **Auth** (`/api/v2/auth`)
+  - `/register` (POST): Yeni kullanıcı kaydı.
+  - `/login` (POST): Kullanıcı girişi ve token alınması.
+- **Users** (`/api/v2/users`)
+  - `/me/stats` (GET): Kullanıcının öğrenme istatistikleri.
+- **Cards** (`/api/v2/cards`)
+  - `/` (GET, POST): Kendi kartlarınızı listeleme ve yeni kart oluşturma.
+  - `/{card_id}` (PATCH, DELETE): Belirli bir kartı güncelleme ve silme.
+  - `/public` (GET): Herkese açık (public) paylaşılan kartları listeleme.
+  - `/images/search` (GET): Pexels üzerinden kelimeye uygun görsel arama.
+- **Reviews** (`/api/v2/reviews`)
+  - `/due-progress` (GET): Bugün çalışılması gereken kartların ilerleme (progress) verilerini getirir.
+  - `/library` (GET): Kullanıcının tüm kartlarına ait ilerleme verilerini getirir.
+  - `/due` (GET): Bugün çalışılması gereken (süresi gelmiş) kartları getirir.
+  - `/` (PUT): Öğrenme seansında karta verilen cevaba göre (0: Unuttum, 1: Zor, 2: Kolay vs.) aralıklı tekrar algoritmasını (Spaced Repetition) çalıştırır.
+  - `/progress/{card_id}` (GET): Belirli bir kartın sonraki tekrar tarihini ve çalışma istatistiklerini getirir.
+
+*(API dökümantasyonunun tam detaylı ve interaktif hali uygulama çalışırken `/docs` veya `/redoc` adreslerinden incelenebilir.)*
 
 ## ⚙️ Kurulum ve Çalıştırma 
 
