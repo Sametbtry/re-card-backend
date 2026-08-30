@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from routers import users, auth, flashcards, review
 
-# Tabloları oluştur (Alembic yoksa otomatik oluşturmak için)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Re-Card API", version="2.0.0", description="Re-Card is a flashcard application that helps you learn new words faster.")
